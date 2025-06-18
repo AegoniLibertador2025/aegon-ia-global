@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aegon IA Global</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1e3a8a">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 15px;
+            text-align: center;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            position: relative;
+        }
+        
+        .status {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.2);
+        }
+        
+        .login-screen {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .login-form {
+            background: rgba(255,255,255,0.9);
+            padding: 30px;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 350px;
+            text-align: center;
+        }
+        
+        .login-input {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            font-size: 16px;
+            text-align: center;
+        }
+        
+        .login-button {
+            background: #007AFF;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .message {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            font-size: 16px;
+            line-height: 1.4;
+        }
+        
+        .user-message {
+            background: #007AFF;
+            color: white;
+            align-self: flex-end;
+            margin-left: auto;
+        }
+        
+        .ai-message {
+            background: rgba(255,255,255,0.9);
+            color: #333;
+            align-self: flex-start;
+        }
+        
+        .input-container {
+            padding: 15px;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        #messageInput {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            background: white;
+            outline: none;
+        }
+        
+        #sendButton {
+            width: 50px;
+            height: 50px;
+            border: none;
+            border-radius: 50%;
+            background: #007AFF;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .typing {
+            color: rgba(255,255,255,0.7);
+            font-style: italic;
+            text-align: center;
+            padding: 10px;
+        }
+        
+        .config {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+        }
+        
+        .config-panel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .config-content {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .config-input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        .config-button {
+            background: #007AFF;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        .error {
+            color: #ff3333;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        
+        .success {
+            color: #00aa00;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Pantalla de login -->
+    <div id="loginScreen" class="login-screen">
+        <div class="login-form">
+            <h2>🤖 Aegon IA</h2>
+            <p style="margin: 20px 0; color: #666;">Acceso Global</p>
+            
+            <input type="password" class="login-input" id="passwordInput" placeholder="Contraseña de acceso" onkeypress="handleLoginKeyPress(event)">
+            
+            <button class="login-button" onclick="login()">Acceder</button>
+            
+            <div id="loginError" class="error hidden">Contraseña incorrecta</div>
+            
+            <div style="margin-top: 20px; font-size: 12px; color: #666;">
+                Contraseña por defecto: <strong>aegon123</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- App principal -->
+    <div id="mainApp" class="hidden">
+        <div class="header">
+            🌍 Aegon IA Global
+            <div class="status" id="connectionStatus">🔴 Desconectado</div>
+            <button class="config" onclick="showConfig()">⚙️</button>
+        </div>
+        
+        <div class="chat-container" id="chatContainer">
+            <div class="message ai-message">
+                ¡Hola! Soy Aegon, tu asistente de IA accesible desde cualquier lugar del mundo. Configura tu URL de Ngrok y empecemos a chatear.
+            </div>
+        </div>
+        
+        <div class="input-container">
+            <input type="text" id="messageInput" placeholder="Escribe tu mensaje..." onkeypress="handleKeyPress(event)">
+            <button id="sendButton" onclick="sendMessage()">➤</button>
+        </div>
+    </div>
+    
+    <!-- Panel de configuración -->
+    <div class="config-panel" id="configPanel">
+        <div class="config-content">
+            <h3>🌍 Configuración Global</h3>
+            
+            <label>URL de Ngrok (sin http/https):</label>
+            <input type="text" class="config-input" id="ngrokUrl" placeholder="abc123.ngrok.io">
+            
+            <label>Modelo:</label>
+            <input type="text" class="config-input" id="modelName" placeholder="llama3.2:3b" value="llama3.2:3b">
+            
+            <label>Cambiar contraseña:</label>
+            <input type="password" class="config-input" id="newPassword" placeholder="Nueva contraseña (opcional)">
+            
+            <button class="config-button" onclick="saveConfig()">Guardar</button>
+            <button class="config-button" onclick="testConnection()">Probar Conexión</button>
+            <button class="config-button" onclick="hideConfig()" style="background: #666;">Cancelar</button>
+            <button class="config-button" onclick="logout()" style="background: #ff3333;">Cerrar Sesión</button>
+            
+            <div id="configMessage"></div>
+        </div>
+    </div>
+
+    <script>
+        let config = {
+            ngrokUrl: localStorage.getItem('ngrokUrl') || '',
+            modelName: localStorage.getItem('modelName') || 'llama3.2:3b',
+            password: localStorage.getItem('password') || 'aegon123'
+        };
+
+        let isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
+
+        // Inicializar app
+        if (isLoggedIn) {
+            showMainApp();
+        } else {
+            showLoginScreen();
+        }
+
+        function showLoginScreen() {
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('mainApp').classList.add('hidden');
+        }
+
+        function showMainApp() {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('mainApp').classList.remove('hidden');
+            updateConnectionStatus();
+        }
+
+        function handleLoginKeyPress(event) {
+            if (event.key === 'Enter') {
+                login();
+            }
+        }
+
+        function login() {
+            const password = document.getElementById('passwordInput').value;
+            const errorDiv = document.getElementById('loginError');
+            
+            if (password === config.password) {
+                sessionStorage.setItem('isLoggedIn', 'true');
+                isLoggedIn = true;
+                showMainApp();
+                errorDiv.classList.add('hidden');
+            } else {
+                errorDiv.classList.remove('hidden');
+                document.getElementById('passwordInput').value = '';
+            }
+        }
+
+        function logout() {
+            sessionStorage.removeItem('isLoggedIn');
+            isLoggedIn = false;
+            showLoginScreen();
+            hideConfig();
+        }
+
+        function showConfig() {
+            document.getElementById('ngrokUrl').value = config.ngrokUrl;
+            document.getElementById('modelName').value = config.modelName;
+            document.getElementById('configPanel').style.display = 'flex';
+        }
+
+        function hideConfig() {
+            document.getElementById('configPanel').style.display = 'none';
+            document.getElementById('configMessage').innerHTML = '';
+        }
+
+        function saveConfig() {
+            config.ngrokUrl = document.getElementById('ngrokUrl').value.trim();
+            config.modelName = document.getElementById('modelName').value.trim();
+            
+            const newPassword = document.getElementById('newPassword').value.trim();
+            if (newPassword) {
+                config.password = newPassword;
+                localStorage.setItem('password', config.password);
+            }
+            
+            localStorage.setItem('ngrokUrl', config.ngrokUrl);
+            localStorage.setItem('modelName', config.modelName);
+            
+            document.getElementById('configMessage').innerHTML = '<div class="success">✅ Configuración guardada</div>';
+            updateConnectionStatus();
+        }
+
+        async function testConnection() {
+            if (!config.ngrokUrl) {
+                document.getElementById('configMessage').innerHTML = '<div class="error">❌ Ingresa la URL de Ngrok</div>';
+                return;
+            }
+
+            document.getElementById('configMessage').innerHTML = '<div>🔄 Probando conexión...</div>';
+            
+            try {
+                const response = await fetch(`https://${config.ngrokUrl}/api/tags`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                if (response.ok) {
+                    document.getElementById('configMessage').innerHTML = '<div class="success">✅ Conexión exitosa</div>';
+                    updateConnectionStatus();
+                } else {
+                    document.getElementById('configMessage').innerHTML = '<div class="error">❌ Error de conexión</div>';
+                }
+            } catch (error) {
+                document.getElementById('configMessage').innerHTML = '<div class="error">❌ No se puede conectar</div>';
+            }
+        }
+
+        function updateConnectionStatus() {
+            const status = document.getElementById('connectionStatus');
+            if (config.ngrokUrl) {
+                status.textContent = '🟢 Configurado';
+                status.style.background = 'rgba(0,255,0,0.3)';
+            } else {
+                status.textContent = '🔴 Sin configurar';
+                status.style.background = 'rgba(255,0,0,0.3)';
+            }
+        }
+
+        function addMessage(text, className) {
+            const container = document.getElementById('chatContainer');
+            const message = document.createElement('div');
+            message.className = `message ${className}`;
+            message.textContent = text;
+            container.appendChild(message);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function showTyping() {
+            const container = document.getElementById('chatContainer');
+            const typing = document.createElement('div');
+            typing.className = 'typing';
+            typing.id = 'typingIndicator';
+            typing.textContent = 'Aegon está escribiendo...';
+            container.appendChild(typing);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function hideTyping() {
+            const typing = document.getElementById('typingIndicator');
+            if (typing) typing.remove();
+        }
+
+        async function sendMessage() {
+            if (!config.ngrokUrl) {
+                addMessage('❌ Configura la URL de Ngrok primero (botón ⚙️)', 'ai-message');
+                return;
+            }
+
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            addMessage(message, 'user-message');
+            input.value = '';
+            showTyping();
+            
+            try {
+                const response = await fetch(`https://${config.ngrokUrl}/api/generate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        model: config.modelName,
+                        prompt: message,
+                        stream: false
+                    })
+                });
+                
+                hideTyping();
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    addMessage(data.response || 'Sin respuesta', 'ai-message');
+                } else {
+                    addMessage(`Error ${response.status}: Verifica la configuración`, 'ai-message');
+                }
+                
+            } catch (error) {
+                hideTyping();
+                addMessage(`Error de conexión: ${error.message}`, 'ai-message');
+            }
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        // Actualizar estado al cargar
+        updateConnectionStatus();
+    </script>
+</body>
+</html>
